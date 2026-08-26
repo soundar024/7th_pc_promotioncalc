@@ -17,101 +17,112 @@ function formatRupees(value) {
 
 function formatDate(date) {
   return date.toLocaleDateString("en-GB", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
+    day: "2-digit", month: "2-digit", year: "numeric"
   });
 }
 
 function parseDate(value) {
-  const [y, m, d] = value.split("-").map(Number);
-  return new Date(y, m - 1, d);
+  const [y,m,d] = value.split("-").map(Number);
+  return new Date(y,m-1,d);
 }
 
-function addMonths(date, months) {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + months);
-  return d;
+function dateForYear(year, month) {
+  return new Date(year, month-1, 1);
 }
 
-function nextJanuaryOrJuly(date) {
-  const y = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-
-  if (month < 7 || (month === 7 && day === 1)) {
-    return new Date(y + 1, 0, 1);
-  }
-  return new Date(y + 1, 6, 1);
+function levelIndex(level) {
+  return PAY_MATRIX_LEVELS.findIndex(x => String(x) === String(level));
 }
 
-function nextDniDate(dni, promotionDateValue) {
-  const p = parseDate(promotionDateValue);
-  const [dniMonth] = dni.split("-").map(Number);
-
-  let candidate = new Date(p.getFullYear(), dniMonth - 1, 1);
-  if (candidate <= p) {
-    candidate = new Date(p.getFullYear() + 1, dniMonth - 1, 1);
-  }
-  return candidate;
+function cells(level) {
+  return PAY_MATRIX[String(level)] || [];
 }
 
-function getNextCell(level, amount) {
-  const cells = PAY_MATRIX[String(level)] || [];
-  return cells.find(v => v >= amount) ?? null;
+function cellIndex(level, basic) {
+  return cells(level).indexOf(Number(basic));
 }
 
-function getCurrentNextCell(level, basic) {
-  const cells = PAY_MATRIX[String(level)] || [];
-  const index = cells.findIndex(v => v >= basic);
-  if (index === -1) return null;
-  if (cells[index] === basic) return cells[index + 1] ?? null;
-  return cells[index] ?? null;
+function oneIncrement(level, basic) {
+  const list = cells(level);
+  const idx = cellIndex(level, basic);
+  if (idx < 0) throw new Error(`₹${Number(basic).toLocaleString("en-IN")} is not an exact cell in Level ${level}.`);
+  return list[idx + 1] ?? list[idx];
 }
 
-function getPromotedCell(level, amount) {
-  const cells = PAY_MATRIX[String(level)] || [];
-  return cells.find(v => v >= amount) ?? null;
+function twoIncrements(level, basic) {
+  const list = cells(level);
+  const idx = cellIndex(level, basic);
+  if (idx < 0) throw new Error(`₹${Number(basic).toLocaleString("en-IN")} is not an exact cell in Level ${level}.`);
+  return list[Math.min(idx + 2, list.length - 1)];
+}
+
+function equalOrNextHigher(level, amount) {
+  const list = cells(level);
+  const found = list.find(v => v >= amount);
+  if (found == null) throw new Error(`No equal or next higher cell is available in Level ${level}.`);
+  return found;
+}
+
+/*
+ Rule 10:
+ - Promotion/appointment from 02 Jan through 01 Jul => next annual increment 01 Jan of following year.
+ - Promotion/appointment from 02 Jul through 01 Jan => next annual increment 01 Jul.
+ - Therefore promotion exactly on 01 Jan => 01 Jul of the same year.
+ - Promotion exactly on 01 Jul => 01 Jan of the following year.
+*/
+function nextIncrementFromPromotionDate(promotion) {
+  const y = promotion.getFullYear();
+  const m = promotion.getMonth() + 1;
+  const d = promotion.getDate();
+
+  if (m === 1 && d === 1) return dateForYear(y, 7);
+  if (m >= 1 && (m < 7 || (m === 7 && d === 1))) return dateForYear(y + 1, 1);
+  return dateForYear(y + 1, 7);
+}
+
+function dniDateAfterPromotion(promotion, dni) {
+  const [month] = dni.split("-").map(Number);
+  let date = dateForYear(promotion.getFullYear(), month);
+  if (date < promotion) date = dateForYear(promotion.getFullYear() + 1, month);
+  return date;
+}
+
+function nextAnnualAfter(date) {
+  const m = date.getMonth() + 1;
+  return m === 1 ? dateForYear(date.getFullYear() + 1, 1) : dateForYear(date.getFullYear() + 1, 7);
 }
 
 function calculatePromotionOption(level, basic, promoted) {
-  const incremented = getCurrentNextCell(level, basic);
-  if (incremented === null) {
-    throw new Error("The existing basic pay is outside the available cells in the selected level.");
-  }
-
-  const fixed = getPromotedCell(promoted, incremented);
-  if (fixed === null) {
-    throw new Error("No equal or next higher cell was found in the promoted level.");
-  }
-
-  return { incremented, fixed };
+  const inc = oneIncrement(level, basic);
+  const fixed = equalOrNextHigher(promoted, inc);
+  const dni = nextIncrementFromPromotionDate(parseDate(promotionDate.value));
+  return { inc, fixed, firstDate: dni, nextDate: dateForYear(dni.getFullYear() + 1, dni.getMonth() + 1), promotionToDni: fixed };
 }
 
-function calculateDniOption(level, basic, promoted, promotionDateValue, dni) {
-  /*
-   * Simplified deferred-fixation model:
-   * 1. On the promotion date, the employee continues on the existing basic for
-   *    the purpose of the deferred option.
-   * 2. At the existing DNI, one increment is applied in the old level.
-   * 3. The resulting pay is then placed at the equal/next higher cell in the
-   *    promoted level.
-   *
-   * The exact Railway case can have additional conditions; this is intentionally
-   * isolated so the rule engine can be refined without changing the UI.
-   */
-  const dniDate = nextDniDate(dni, promotionDateValue);
-  const incremented = getCurrentNextCell(level, basic);
-  if (incremented === null) {
-    throw new Error("The existing basic pay is outside the available cells in the selected level.");
-  }
+function calculateDniOption(level, basic, promoted, promotion, dni) {
+  const dniDate = dniDateAfterPromotion(promotion, dni);
 
-  const fixed = getPromotedCell(promoted, incremented);
-  if (fixed === null) {
-    throw new Error("No equal or next higher cell was found in the promoted level.");
-  }
+  // From promotion date until DNI: next higher cell in promoted Level to the existing basic.
+  const promotionToDni = equalOrNextHigher(promoted, basic);
 
-  return { incremented, fixed, dniDate };
+  // On DNI: give two increments in lower Level, then equal/next higher in promoted Level.
+  const twoInc = twoIncrements(level, basic);
+  const fixed = equalOrNextHigher(promoted, twoInc);
+
+  // After refixation on DNI, next annual increment remains on the same Jan/July cycle one year later.
+  const nextDate = dateForYear(dniDate.getFullYear() + 1, dniDate.getMonth() + 1);
+
+  return { inc: oneIncrement(level, basic), twoInc, fixed, firstDate: dniDate, nextDate, promotionToDni };
+}
+
+function populateLevels() {
+  currentLevel.innerHTML = '<option value="">Select Level</option>';
+  promotedLevel.innerHTML = '<option value="">Select Level</option>';
+  PAY_MATRIX_LEVELS.forEach(level => {
+    const label = `Level ${level}`;
+    currentLevel.add(new Option(label, level));
+    promotedLevel.add(new Option(label, level));
+  });
 }
 
 function showError(message) {
@@ -125,75 +136,66 @@ function clearError() {
   errorBox.textContent = "";
 }
 
-function populateLevels() {
-  currentLevel.innerHTML = '<option value="">Select Level</option>';
-  promotedLevel.innerHTML = '<option value="">Select Level</option>';
-
-  PAY_MATRIX_LEVELS.forEach(level => {
-    currentLevel.add(new Option(`Level ${level}`, level));
-    promotedLevel.add(new Option(`Level ${level}`, level));
-  });
-}
-
 form.addEventListener("submit", event => {
   event.preventDefault();
   clearError();
 
   try {
-    const level = Number(currentLevel.value);
+    const level = currentLevel.value;
     const basic = Number(currentBasic.value);
-    const promoted = Number(promotedLevel.value);
-    const promotionDateValue = promotionDate.value;
+    const promoted = promotedLevel.value;
+    const pDate = parseDate(promotionDate.value);
     const dni = currentDni.value;
     const option = document.querySelector('input[name="fixationOption"]:checked').value;
 
-    if (!level || !promoted || !basic || !promotionDateValue || !dni) {
+    if (!level || !promoted || !basic || !promotionDate.value || !dni) {
       throw new Error("Please complete all required fields.");
     }
 
-    if (promoted <= level) {
+    if (levelIndex(promoted) <= levelIndex(level)) {
       throw new Error("The promoted Pay Level must be higher than the existing Pay Level.");
     }
 
-    if (!PAY_MATRIX[String(level)] || !PAY_MATRIX[String(promoted)]) {
-      throw new Error("The selected Pay Level is not available in the current matrix data.");
+    if (cellIndex(level, basic) < 0) {
+      throw new Error(`₹${basic.toLocaleString("en-IN")} is not an exact cell in Level ${level}. Please select the actual basic pay cell.`);
     }
 
-    const pDate = parseDate(promotionDateValue);
-    const result = option === "dni"
-      ? calculateDniOption(level, basic, promoted, promotionDateValue, dni)
-      : calculatePromotionOption(level, basic, promoted);
-
-    const nextIncrement = option === "dni"
-      ? addMonths(result.dniDate, 6)
-      : nextJanuaryOrJuly(pDate);
+    let result;
+    if (option === "dni") {
+      result = calculateDniOption(level, basic, promoted, pDate, dni);
+    } else {
+      result = calculatePromotionOption(level, basic, promoted);
+    }
 
     document.getElementById("rCurrentLevel").textContent = `Level ${level}`;
     document.getElementById("rCurrentBasic").textContent = formatRupees(basic);
     document.getElementById("rPromotionDate").textContent = formatDate(pDate);
-    document.getElementById("rExistingDni").textContent = dni === "01-01" ? "1 January" : "1 July";
-    document.getElementById("rIncrementedBasic").textContent = formatRupees(result.incremented);
     document.getElementById("rPromotedLevel").textContent = `Level ${promoted}`;
+    document.getElementById("rOneIncrement").textContent = formatRupees(result.inc);
+    document.getElementById("rPromotionToDni").textContent = formatRupees(result.promotionToDni);
     document.getElementById("rFixedBasic").textContent = formatRupees(result.fixed);
-    document.getElementById("rIncrease").textContent = formatRupees(result.fixed - basic);
-    document.getElementById("rNextIncrement").textContent = formatDate(nextIncrement);
+    document.getElementById("rFirstIncrement").textContent = formatDate(result.firstDate);
+    document.getElementById("rNextIncrement").textContent = formatDate(result.nextDate);
 
     if (option === "dni") {
       document.getElementById("rExplanation").textContent =
-        `DNI option selected. The existing Level is advanced by one pay-matrix cell to ` +
-        `${formatRupees(result.incremented)} at the applicable DNI stage, and the equal/next higher ` +
-        `cell in Level ${promoted} is ${formatRupees(result.fixed)}.`;
+        `DNI option: from ${formatDate(pDate)} until the lower-post DNI (${formatDate(result.firstDate)}), ` +
+        `pay is ${formatRupees(result.promotionToDni)} in Level ${promoted}. On the DNI, two increments ` +
+        `in Level ${level} produce ${formatRupees(result.twoInc)}, and the pay is then placed at the ` +
+        `equal/next higher cell of Level ${promoted}, i.e. ${formatRupees(result.fixed)}. ` +
+        `The next annual increment is ${formatDate(result.nextDate)}.`;
     } else {
       document.getElementById("rExplanation").textContent =
-        `Promotion-date option selected. One increment is allowed in the existing Level, moving ` +
-        `basic pay from ${formatRupees(basic)} to ${formatRupees(result.incremented)}. ` +
-        `The equal/next higher cell in Level ${promoted} is ${formatRupees(result.fixed)}.`;
+        `Promotion-date option: one increment in Level ${level} raises basic pay from ` +
+        `${formatRupees(basic)} to ${formatRupees(result.inc)}. The employee is then placed at the ` +
+        `equal/next higher cell in Level ${promoted}: ${formatRupees(result.fixed)}. ` +
+        `The next annual increment is ${formatDate(result.firstDate)}.`;
     }
 
     resultCard.classList.remove("hidden");
-    resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
-  } catch (error) {
-    showError(error.message);
+    resultCard.scrollIntoView({behavior:"smooth", block:"start"});
+  } catch (e) {
+    showError(e.message);
   }
 });
 

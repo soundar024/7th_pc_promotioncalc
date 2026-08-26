@@ -1,43 +1,34 @@
-# 7th CPC Promotion Pay Fixation Calculator — V2
+# 7th CPC Railway Promotion Pay Fixation Calculator — V3
 
-Browser-only calculator for indicative 7th CPC promotion pay fixation.
+## What was fixed
 
-## V2 changes
+1. Annual increment dates are restricted to **1 January or 1 July**.
+2. Promotion on **1 January** gives the next annual increment on **1 July** of that year.
+3. Promotion from **2 January to 1 July** gives the next annual increment on **1 January** of the following year.
+4. Promotion from **2 July to 31 December** gives the next annual increment on **1 July** of the following year.
+5. Promotion on **1 July** gives the next annual increment on **1 January** of the following year.
+6. Basic pay must be an exact cell in the selected Level.
+7. The complete civilian Pay Matrix Levels **1–18**, including **Level 13A**, is included.
+8. Level 13 uses the revised **₹123,100–₹215,900** matrix.
+9. The DNI option follows the Railway Board-adopted DoPT methodology:
+   - from promotion to DNI: next higher cell in the promoted Level;
+   - on DNI: two increments in the lower Level;
+   - then equal/next higher cell in the promoted Level;
+   - subsequent annual increment remains on the applicable 1 January/1 July cycle.
 
-- Corrects the previous error where the increment date was simply calculated as promotion date + 1 year.
-- Uses the 1 January / 1 July annual increment cycle.
-- Adds existing DNI input.
-- Adds separate promotion-date and DNI fixation options.
-- Shows the calculation steps.
-- Keeps the calculation engine separate from the UI.
-- Still requires no PHP, MySQL or XAMPP.
+## Rule references
 
-## Important rule basis
+- Department of Expenditure, CCS (Revised Pay) Rules, 2016 — Rule 10 and Rule 13.
+- Railway Board RBE No. 79/2017 — DNI option on promotion.
+- DoPT OM No. 13/02/2017-Estt.(Pay-I), 27 July 2017.
+- DoPT clarification dated 28 August 2018.
 
-The Department of Expenditure has issued clarifications on Rule 10 of the CCS (Revised Pay) Rules, 2016, including cases involving promotion/financial upgradation on 1 January and 1 July.
-
-Railway Board has separately issued Railway-specific instructions on pay fixation and the availability of the DNI option.
-
-This V2 is still an indicative software implementation. The DNI route and special 1 January/1 July cases should be verified against the exact Railway Board order applicable to the employee before official use.
-
-## Project
-
-```text
-7th-cpc-pay-calculator/
-├── index.html
-├── app.js
-├── pay-matrix.js
-├── style.css
-├── README.md
-└── .gitignore
-```
+This is an indicative calculator and should be verified against the employee's actual service record and applicable Railway instructions before official use.
 
 ## GitHub Pages
 
-Keep `index.html` at repository root and use:
+Keep `index.html` at repository root:
 
 `Settings → Pages → Deploy from a branch → main → / (root)`
 
-## Next development step
-
-Before calling this an official calculator, verify the complete Level 1–18 matrix and implement the exact Railway Rule 13 / DNI scenarios, including promotion on 1 January, promotion on 1 July, and cases where two increments are involved.
+No PHP, MySQL or XAMPP is required.

@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="7th CPC promotion pay fixation calculator">
-<title>7th CPC Promotion Pay Fixation Calculator</title>
+<meta name="description" content="7th CPC Railway promotion pay fixation calculator">
+<title>7th CPC Railway Promotion Pay Fixation Calculator</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <main class="container">
 <header class="hero">
-  <p class="eyebrow">7th CPC • Railway / Central Government</p>
+  <p class="eyebrow">7th CPC • Indian Railways</p>
   <h1>Promotion Pay Fixation Calculator</h1>
-  <p class="subtitle">Indicative calculation of promotion fixation and the applicable January/July increment cycle.</p>
+  <p class="subtitle">Indicative calculator for pay fixation on promotion, including the Date of Next Increment (DNI) option.</p>
 </header>
 
 <section class="card">
@@ -26,6 +26,7 @@
     <div class="field">
       <label for="currentBasic">Existing Basic Pay (₹)</label>
       <input id="currentBasic" type="number" min="1" step="100" placeholder="e.g. 44900" required>
+      <small>Basic Pay must be an exact cell in the selected Level.</small>
     </div>
 
     <div class="field">
@@ -39,12 +40,13 @@
     </div>
 
     <div class="field">
-      <label for="currentDni">Existing DNI</label>
+      <label for="currentDni">Existing DNI in Lower Level</label>
       <select id="currentDni" required>
         <option value="">Select DNI</option>
         <option value="01-01">1 January</option>
         <option value="01-07">1 July</option>
       </select>
+      <small>Required when the DNI option is selected.</small>
     </div>
   </div>
 
@@ -56,7 +58,7 @@
     </label>
     <label class="radio">
       <input type="radio" name="fixationOption" value="dni">
-      Fix from existing DNI
+      Fix from Date of Next Increment (DNI)
     </label>
   </fieldset>
 
@@ -69,52 +71,52 @@
 <section id="resultCard" class="card hidden">
   <div class="section-heading">
     <div>
-      <p class="eyebrow">Calculation Result</p>
-      <h2>Pay Fixation Statement</h2>
+      <p class="eyebrow">Result</p>
+      <h2>Pay Fixation</h2>
     </div>
     <button id="printButton" class="secondary" type="button">Print / Save PDF</button>
   </div>
 
   <div class="result-grid">
-    <div><span>Existing Level</span><strong id="rCurrentLevel"></strong></div>
-    <div><span>Existing Basic</span><strong id="rCurrentBasic"></strong></div>
+    <div><span>Existing Pay Level</span><strong id="rCurrentLevel"></strong></div>
+    <div><span>Existing Basic Pay</span><strong id="rCurrentBasic"></strong></div>
     <div><span>Promotion Date</span><strong id="rPromotionDate"></strong></div>
-    <div><span>Existing DNI</span><strong id="rExistingDni"></strong></div>
-    <div><span>Increment in Existing Level</span><strong id="rIncrementedBasic"></strong></div>
-    <div><span>Promoted Level</span><strong id="rPromotedLevel"></strong></div>
+    <div><span>Promoted Pay Level</span><strong id="rPromotedLevel"></strong></div>
+    <div><span>Pay after one lower-level increment</span><strong id="rOneIncrement"></strong></div>
+    <div><span>Pay from promotion till DNI</span><strong id="rPromotionToDni"></strong></div>
     <div class="highlight"><span>Pay Fixed in Promoted Level</span><strong id="rFixedBasic"></strong></div>
-    <div><span>Increase in Basic</span><strong id="rIncrease"></strong></div>
-    <div><span>Next Increment Date</span><strong id="rNextIncrement"></strong></div>
+    <div><span>First applicable increment / DNI</span><strong id="rFirstIncrement"></strong></div>
+    <div><span>Subsequent annual increment</span><strong id="rNextIncrement"></strong></div>
   </div>
 
   <div class="explanation">
-    <h3>How the result was reached</h3>
+    <h3>Calculation</h3>
     <p id="rExplanation"></p>
   </div>
 
   <div class="note">
-    <strong>Rule/date note:</strong> Annual increments are on 1 January or 1 July. The exact result can depend on the
-    promotion date, qualifying service, the option exercised, and applicable Railway/CCS instructions.
+    <strong>Increment-date rule:</strong> Annual increments are only on <strong>1 January</strong> or
+    <strong>1 July</strong>. No calculation in this application can produce an annual increment date such as
+    1 August or 15 January.
   </div>
 
   <div class="disclaimer">
-    <strong>Important:</strong> This is an indicative calculator, not an official sanction/fixation order.
-    Verify the applicable Railway Board/Department of Expenditure instructions and the employee's service record
-    before using the result officially.
+    <strong>Important:</strong> This is an indicative software calculator. Verify the employee's service record,
+    promotion order, applicable Railway Board instructions and any special case before using the result for an
+    official pay-fixation order.
   </div>
 </section>
 
-<section class="card help">
-  <h2>Inputs</h2>
+<section class="card">
+  <h2>Rules used</h2>
   <ul>
-    <li><strong>Existing DNI:</strong> the employee's current annual increment date before promotion.</li>
-    <li><strong>Fix from promotion:</strong> applies the promotional fixation at the promotion stage.</li>
-    <li><strong>Fix from DNI:</strong> models the deferred fixation route from the existing DNI.</li>
+    <li><strong>Rule 10:</strong> annual increment dates are 1 January and 1 July.</li>
+    <li><strong>Rule 13:</strong> for promotion-date fixation, one increment is given in the lower Level and the employee is placed at the equal/next higher cell in the promoted Level.</li>
+    <li><strong>DNI option:</strong> from promotion to DNI, the employee is placed at the next higher cell in the promoted Level; on DNI, pay is re-fixed after two increments in the lower Level and then placed at the equal/next higher cell in the promoted Level.</li>
   </ul>
-  <p class="muted">All calculations happen locally in your browser. No data is uploaded.</p>
+  <p class="muted">Pay matrix data includes Levels 1–18, including Level 13A. Level 13 reflects the revised 123100–215900 matrix.</p>
 </section>
 </main>
-
 <script src="pay-matrix.js"></script>
 <script src="app.js"></script>
 </body>
