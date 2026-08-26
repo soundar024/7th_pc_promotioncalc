@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="7th CPC Promotion Pay Fixation Calculator">
+<title>7th CPC Promotion Pay Calculator</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="container">
+<header class="hero">
+<p class="eyebrow">7th Central Pay Commission</p>
+<h1>Promotion Pay Fixation Calculator</h1>
+<p class="subtitle">Indicative promotion pay fixation using the 7th CPC Pay Matrix.</p>
+</header>
+
+<section class="card">
+<form id="calculatorForm">
+<div class="grid">
+<div class="field">
+<label for="currentLevel">Current Pay Level</label>
+<select id="currentLevel" required></select>
+</div>
+<div class="field">
+<label for="currentBasic">Current Basic Pay (₹)</label>
+<input id="currentBasic" type="number" min="18000" step="100" placeholder="e.g. 44900" required>
+</div>
+<div class="field">
+<label for="promotedLevel">Promoted Pay Level</label>
+<select id="promotedLevel" required></select>
+</div>
+<div class="field">
+<label for="promotionDate">Date of Promotion</label>
+<input id="promotionDate" type="date" required>
+</div>
+</div>
+
+<fieldset>
+<legend>Fixation Option</legend>
+<label class="radio"><input type="radio" name="fixationOption" value="promotion" checked> Fix pay on date of promotion</label>
+<label class="radio"><input type="radio" name="fixationOption" value="dni"> Fix pay from date of next increment</label>
+</fieldset>
+
+<button type="submit">Calculate Pay Fixation</button>
+</form>
+</section>
+
+<section id="errorBox" class="card error hidden"></section>
+
+<section id="resultCard" class="card hidden">
+<div class="section-heading">
+<div><p class="eyebrow">Result</p><h2>Pay Fixation</h2></div>
+<button id="printButton" class="secondary" type="button">Print / Save PDF</button>
+</div>
+<div class="result-grid">
+<div><span>Existing Pay Level</span><strong id="resultCurrentLevel"></strong></div>
+<div><span>Existing Basic Pay</span><strong id="resultCurrentBasic"></strong></div>
+<div><span>One Increment</span><strong id="resultIncrementedBasic"></strong></div>
+<div><span>Promoted Pay Level</span><strong id="resultPromotedLevel"></strong></div>
+<div class="highlight"><span>Pay Fixed</span><strong id="resultFixedBasic"></strong></div>
+<div><span>Increase in Basic</span><strong id="resultIncrease"></strong></div>
+<div><span>Indicative Next Increment</span><strong id="resultNextIncrement"></strong></div>
+</div>
+<div class="explanation">
+<h3>Calculation</h3>
+<p id="calculationText"></p>
+</div>
+<div class="disclaimer"><strong>Important:</strong> Verify the applicable Government/Railway orders and individual service circumstances before using the result for an official pay-fixation case.</div>
+</section>
+
+<section class="card help">
+<h2>How it works</h2>
+<ol>
+<li>One increment is calculated on the existing basic pay.</li>
+<li>The resulting amount is searched in the promoted Pay Level.</li>
+<li>The equal or next higher cell is selected as the fixed pay.</li>
+<li>The result and indicative increment date are displayed.</li>
+</ol>
+<p class="muted">Everything runs in your browser. No data is sent to a server.</p>
+</section>
+</main>
+<script src="pay-matrix.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
