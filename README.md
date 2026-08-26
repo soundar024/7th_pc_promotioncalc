@@ -1,19 +1,26 @@
-# 7th CPC Promotion Pay Calculator
+# 7th CPC Promotion Pay Fixation Calculator — V2
 
-Browser-only 7th CPC promotion pay calculator.
+Browser-only calculator for indicative 7th CPC promotion pay fixation.
 
-## No server required
+## V2 changes
 
-- No PHP
-- No MySQL
-- No XAMPP
-- No backend
-- No login
-- No database
+- Corrects the previous error where the increment date was simply calculated as promotion date + 1 year.
+- Uses the 1 January / 1 July annual increment cycle.
+- Adds existing DNI input.
+- Adds separate promotion-date and DNI fixation options.
+- Shows the calculation steps.
+- Keeps the calculation engine separate from the UI.
+- Still requires no PHP, MySQL or XAMPP.
 
-Everything runs in JavaScript in the user's browser.
+## Important rule basis
 
-## Files
+The Department of Expenditure has issued clarifications on Rule 10 of the CCS (Revised Pay) Rules, 2016, including cases involving promotion/financial upgradation on 1 January and 1 July.
+
+Railway Board has separately issued Railway-specific instructions on pay fixation and the availability of the DNI option.
+
+This V2 is still an indicative software implementation. The DNI route and special 1 January/1 July cases should be verified against the exact Railway Board order applicable to the employee before official use.
+
+## Project
 
 ```text
 7th-cpc-pay-calculator/
@@ -21,47 +28,16 @@ Everything runs in JavaScript in the user's browser.
 ├── app.js
 ├── pay-matrix.js
 ├── style.css
-└── README.md
+├── README.md
+└── .gitignore
 ```
-
-## Run locally
-
-Open `index.html` directly in a browser.
 
 ## GitHub Pages
 
-1. Push the files to a GitHub repository.
-2. Open **Settings → Pages**.
-3. Under **Build and deployment**, choose **Deploy from a branch**.
-4. Select `main` and `/ (root)`.
-5. Save.
+Keep `index.html` at repository root and use:
 
-GitHub will provide a URL similar to:
+`Settings → Pages → Deploy from a branch → main → / (root)`
 
-`https://YOUR-USERNAME.github.io/REPOSITORY-NAME/`
+## Next development step
 
-## Current calculation
-
-The current prototype:
-1. Reads existing basic pay.
-2. Calculates one increment.
-3. Finds the equal/next higher cell in the promoted level.
-4. Shows the indicative next increment date.
-
-## Important
-
-This is an indicative prototype. Verify the official 7th CPC matrix and applicable Government/Railway rules before official use.
-
-V1 contains Levels 1-10. Levels 11-18 should be verified and added before production use.
-
-## Planned
-
-- Complete Level 1-18 matrix
-- Exact Rule 13 logic
-- Correct DNI option
-- Railway-specific promotion/MACP cases
-- Increment-date rules
-- Pay fixation statement
-- Print/PDF
-- DA/HRA and gross-pay comparison
-- PWA/offline installation
+Before calling this an official calculator, verify the complete Level 1–18 matrix and implement the exact Railway Rule 13 / DNI scenarios, including promotion on 1 January, promotion on 1 July, and cases where two increments are involved.
